@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/test")
 public class SmartsheetTestController {
-  private static final String HMAC_HEADER = "Smartsheet-Hmac-SHA256";
 
+  private static final String HMAC_HEADER = "Smartsheet-Hmac-SHA256";
+  private final Authenticator authenticator;
   private List<RequestLogEntry> requestLogEntries = new ArrayList<>();
   private Map<Long, String> sharedSecrets = new HashMap<>();
-  private final Authenticator authenticator;
 
   @PostMapping(path = "/webhook", headers = "Smartsheet-Hook-Challenge")
   public VerificationResponse verifyWebhook(@RequestBody VerificationRequest request) {
@@ -39,9 +39,14 @@ public class SmartsheetTestController {
     final RequestLogEntry logEntry = new RequestLogEntry();
     logEntry.setBody(request.getBody());
     logEntry.setHeaders(request.getHeaders().toSingleValueMap());
-    logEntry.setAuthenticated(authenticator
-        .authenticate(sharedSecrets.values().iterator().next(), request.getBody(),
-            request.getHeaders().get(HMAC_HEADER).get(0)));
+
+    final String sharedSecret = sharedSecrets.values().iterator().next();
+    logEntry.setHmac(request.getHeaders().get(HMAC_HEADER).get(0));
+
+    logEntry.setCalculatedHmac(authenticator.calculateHmac(sharedSecret, request.getBody()));
+    logEntry.setAuthenticated(authenticator.authenticate(sharedSecret, request.getBody(),
+        logEntry.getHmac()));
+
     requestLogEntries.add(logEntry);
   }
 
@@ -62,6 +67,7 @@ public class SmartsheetTestController {
 
   @Data
   public static class VerificationRequest {
+
     private String challenge;
   }
 
@@ -76,11 +82,14 @@ public class SmartsheetTestController {
 
     private String body;
     private Map<String, String> headers;
+    private String calculatedHmac;
+    private String hmac;
     private boolean authenticated;
   }
 
   @Data
   public static class SecretData {
+
     private String sharedSecret;
     private long webhookId;
   }
