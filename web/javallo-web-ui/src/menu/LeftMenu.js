@@ -1,21 +1,25 @@
 import React, {Component} from 'react';
 import {withStyles} from "@material-ui/styles";
 
-const leftMenuStyle = {
+const leftMenuStyle = theme => ({
   root: {
     background: 'black',
-    width: '5vw',
-    height: '100vh',
+    width: 50,
+    height: 180,
+    position: 'absolute',
+    [theme.breakpoints.down("md")]: {
+      display: 'none'
+    }
   },
   text: {
     transform: 'rotate(270deg)',
     color: 'rgb(255 ,235, 94)',
     fontSize: 20,
     fontWeight: 700,
-    padding: '11vh 0 0 0',
-    marginLeft: -100,
+    paddingTop: 80,
+    marginLeft: -90,
   }
-};
+});
 
 class LeftMenu extends Component{
   render() {

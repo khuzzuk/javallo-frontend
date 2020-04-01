@@ -1,0 +1,19 @@
+server:
+  port: 2000
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/javallo
+    username: javallo
+    password: javallo
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+  flyway:
+    locations: classpath:/db/migration,/db/data
